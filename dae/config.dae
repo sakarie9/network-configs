@@ -1,0 +1,55 @@
+global {
+  log_level: warning
+  wan_interface: enp34s0 # 修改
+  dial_mode: domain++
+  allow_insecure: false
+  auto_config_kernel_parameter: true
+}
+node {
+  clash: 'socks5://localhost:7890'
+}
+dns {
+  upstream {
+    alidns: 'udp://dns.alidns.com:53'
+    googledns: 'tcp+udp://dns.google:53'
+  }
+  routing {
+    request {
+      fallback: alidns
+    }
+    response {
+      upstream(googledns) -> accept
+      !qname(geosite:cn) && ip(geoip:private) -> googledns
+      fallback: accept
+    }
+  }
+}
+group {
+  clash {
+    policy: fixed(0)
+  }
+}
+# 参考 https://github.com/daeuniverse/dae/blob/main/docs/routing.md
+routing {
+  pname(dnsmasq, systemd-resolved) && l4proto(udp) && dport(53) -> must_direct
+
+  # clash 代理客户端直连，防止网络回环
+  pname(clash) -> must_direct
+  pname(clash-meta) -> must_direct
+  pname(qemu-system-x86) -> must_direct
+
+  # 需要指定代理的网站或进程
+  domain(suffix: bing.com) -> clash
+
+  # 需要指定直连的网站或进程
+  domain(suffix: cm.steampowered.com) -> direct
+  domain(suffix: steamserver.net) -> direct
+  pname(qbittorrent) -> direct
+
+  dip(224.0.0.0/3, 'ff00::/8') -> direct
+  dip(geoip:private) -> direct
+  dip(geoip:cn) -> direct
+  domain(geosite:cn) -> direct
+
+  fallback: clash
+}

@@ -1,0 +1,214 @@
+######### 锚点 start #######
+# proxy 相关
+# pr: &pr {type: select, proxies: [默认, 香港, 台湾, 日本, 新加坡, 美国, 其它地区, 全部节点, 自动选择, DIRECT]}
+
+#这里是订阅更新和延迟测试相关的
+p: &p {type: http, interval: 3600, health-check: {enable: true, url: https://www.gstatic.com/generate_204, interval: 300}}
+
+use: &use
+  type: select
+  use:
+  - sub1
+  
+######### 锚点 end #######
+
+# url里填写自己的订阅,名称不能重复,path(文件位置)不能重复
+proxy-providers:
+  sub1:
+    <<: *p
+    url: "填写处理过的订阅链接" # 修改
+    path: ./sub1.yaml
+
+mixed-port: 7890
+# tcp-concurrent: true # Meta
+
+allow-lan: true
+bind-address: "*"
+find-process-mode: strict
+mode: rule
+log-level: warning
+ipv6: true
+
+external-controller: 0.0.0.0:9090
+external-ui: /etc/clash-meta/yacd-gh-pages # webui 路径
+secret: ""
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: true
+  enhanced-mode: redir-host
+  fake-ip-range: 28.0.0.1/8
+  fake-ip-filter:
+    - '*.lan'
+    - localhost.ptlogin2.qq.com
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - '*.srv.nintendo.net'
+    - '*.stun.playstation.net'
+    - 'xbox.*.microsoft.com'
+    - '*.xboxlive.com'
+    - '*.logon.battlenet.com.cn'
+    - '*.logon.battle.net'
+    - stun.l.google.com
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+  nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+
+proxies:
+
+
+proxy-groups:
+  
+  - {name: 国外流量, <<: *use}
+
+  - {name: 其他流量, type: select, proxies: [国外流量, DIRECT]}
+
+  - {name: 国际流媒体, type: select, proxies: [国外流量, DIRECT]}
+
+  - {name: 大陆流媒体国际版, type: select, proxies: [DIRECT, 国外流量]}
+
+  - {name: Steam, type: select, proxies: [DIRECT, 国外流量]}
+
+  - {name: 国际网站, type: select, proxies: [国外流量, DIRECT]}
+
+  - {name: 大陆流量, type: select, proxies: [DIRECT, 国外流量]}
+
+  - {name: 大陆流媒体, type: select, proxies: [DIRECT, 大陆流量]}
+
+  - {name: 大陆网站, type: select, proxies: [DIRECT, 大陆流量]}
+
+  - {name: Telegram, type: select, proxies: [国外流量, DIRECT]}
+
+  - {name: 特殊节点, <<: *use}
+
+
+rules:
+  # Unbreak
+  - RULE-SET,Unbreak,DIRECT
+
+  # User definied rules
+
+  # Global Area Network
+  #
+  # Telegram
+  - DOMAIN-SUFFIX,t.me,Telegram
+  - DOMAIN-SUFFIX,tdesktop.com,Telegram
+  - DOMAIN-SUFFIX,telegra.ph,Telegram
+  - DOMAIN-SUFFIX,telegram.me,Telegram
+  - DOMAIN-SUFFIX,telegram.org,Telegram
+  - DOMAIN-SUFFIX,telesco.pe,Telegram
+  - IP-CIDR,91.108.0.0/16,Telegram,no-resolve
+  - IP-CIDR,109.239.140.0/24,Telegram,no-resolve
+  - IP-CIDR,149.154.160.0/20,Telegram,no-resolve
+  - IP-CIDR6,2001:67c:4e8::/48,Telegram,no-resolve
+  - IP-CIDR6,2001:b28:f23d::/48,Telegram,no-resolve
+  - IP-CIDR6,2001:b28:f23f::/48,Telegram,no-resolve
+
+  # (Streaming Media)
+  - RULE-SET,Streaming,国际流媒体
+
+  # (StreamingSE)
+  - RULE-SET,StreamingSE,大陆流媒体国际版
+
+  # (Steam)
+  - RULE-SET,Steam,Steam
+
+  # (DNS Cache Pollution) / (IP Blackhole) / (Region-Restricted Access Denied) / (Network Jitter)
+  - RULE-SET,Global,国际网站
+
+  # (StreamingCN)
+  - RULE-SET,StreamingCN,大陆流媒体
+
+  # China Area Network
+  - RULE-SET,China,大陆网站
+
+  # Local Area Network
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,100.64.0.0/10,DIRECT
+  - IP-CIDR,224.0.0.0/4,DIRECT
+  - IP-CIDR,fe80::/10,DIRECT
+
+  # （可选）使用来自 ipipdotnet 的 ChinaIP 以解决数据不准确的问题，使用 ChinaIP.yaml 时可禁用下列直至（包括）「GEOIP,CN」规则
+  - RULE-SET,ChinaIP,大陆流量
+  # Tencent
+  # - IP-CIDR,119.28.28.28/32,🏠 大陆流量
+  # - IP-CIDR,182.254.116.0/24,🏠 大陆流量
+  # GeoIP China
+  # - GEOIP,CN,🏠 大陆流量
+
+  - MATCH,其他流量
+
+rule-providers:
+# name: # Provider 名称
+#   type: http # http 或 file
+#   behavior: classical # 或 ipcidr、domain
+#   path: # 文件路径
+#   url: # 只有当类型为 HTTP 时才可用，您不需要在本地空间中创建新文件。
+#   interval: # 自动更新间隔，仅在类型为 HTTP 时可用
+
+  Unbreak:
+    type: http
+    behavior: classical
+    path: ./RuleSet/Unbreak.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Unbreak.yaml
+    interval: 86400
+
+  Streaming:
+    type: http
+    behavior: classical
+    path: ./RuleSet/StreamingMedia/Streaming.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/Streaming.yaml
+    interval: 86400
+
+  StreamingSE:
+    type: http
+    behavior: classical
+    path: ./RuleSet/StreamingMedia/StreamingSE.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/StreamingSE.yaml
+    interval: 86400
+
+  StreamingCN:
+    type: http
+    behavior: classical
+    path: ./RuleSet/StreamingMedia/StreamingCN.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/StreamingCN.yaml
+    interval: 86400
+
+  Steam:
+    type: http
+    behavior: classical
+    path: ./RuleSet/Extra/Game/Steam.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Extra/Game/Steam.yaml
+    interval: 86400
+
+  Global:
+    type: http
+    behavior: classical
+    path: ./RuleSet/Global.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Global.yaml
+    interval: 86400
+
+  China:
+    type: http
+    behavior: classical
+    path: ./RuleSet/China.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/China.yaml
+    interval: 86400
+
+  ChinaIP:
+    type: http
+    behavior: ipcidr
+    path: ./RuleSet/Extra/ChinaIP.yaml
+    url: https://ghproxy.com/https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/cncidr.txt
+    interval: 86400
