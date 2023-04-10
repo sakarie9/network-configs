@@ -1,7 +1,7 @@
 global {
   log_level: warning
   wan_interface: enp34s0 # 修改
-  dial_mode: domain
+  dial_mode: domain++
   allow_insecure: false
   auto_config_kernel_parameter: true
 }
@@ -11,7 +11,7 @@ node {
 dns {
   upstream {
     alidns: 'udp://dns.alidns.com:53'
-    googledns: 'tcp+udp://dns.google.com:53'
+    googledns: 'tcp+udp://dns.google:53'
   }
   routing {
     request {
@@ -31,7 +31,12 @@ group {
 }
 # 参考 https://github.com/daeuniverse/dae/blob/main/docs/routing.md
 routing {
-  pname(NetworkManager) -> direct
+  pname(dnsmasq, systemd-resolved) && l4proto(udp) && dport(53) -> must_direct
+
+  # clash 代理客户端直连，防止网络回环
+  pname(clash) -> must_direct
+  pname(clash-meta) -> must_direct
+  pname(qemu-system-x86) -> must_direct
 
   # 需要指定代理的网站或进程
   domain(suffix: bing.com) -> clash

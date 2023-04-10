@@ -36,6 +36,8 @@
 
 修改 [dae/config.dae](dae/config.dae)，将 `wan_interface` 的值修改为自己的网卡，可以使用 `ip a` 查看
 
+根据使用的代理在 `routing` 下添加规则，如 `pname(clash) -> must_direct`
+
 ### caddy
 
 无直连需求可跳过，参考 [在Linux上使用Caddy反代Steam社区](https://sakari.top/2022/steam-caddy/)
