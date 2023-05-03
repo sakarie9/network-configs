@@ -22,11 +22,11 @@
 
 #### 转换订阅
 
-自行搭建 [proxy-provider-converter](https://github.com/qier222/proxy-provider-converter)，或使用 [proxy-converter.sakari.top](https://proxy-converter.sakari.top/)，将 clash 订阅转换成 `Proxy Provider` 支持的格式
+自行搭建 [proxy-provider-converter](https://github.com/qier222/proxy-provider-converter)，或使用 [proxy-converter.sakari.top](https://proxy-converter.sakari.top/)，将 clash 订阅转换成 `Proxy Provider` 支持的格式，或直接使用 v2ray 订阅连接
 
 #### 修改配置
 
-编辑 [clash/config.yaml](clash/config.yaml)，将转换后的链接填入 `url` 中
+编辑 [clash/config.yaml](https://github.com/xzsk2/network-configs/blob/main/clash/config.yaml)，将转换后的链接填入 `url` 中
 
 下载 [Yacd-meta](https://github.com/yaling888/yacd/archive/gh-pages.zip)，解压至配置文件中 `external-ui` 所在目录
 
@@ -34,7 +34,7 @@
 
 ### dae
 
-修改 [dae/config.dae](dae/config.dae)，将 `wan_interface` 的值修改为自己的网卡，可以使用 `ip a` 查看
+修改 [dae/config.dae](https://github.com/xzsk2/network-configs/blob/main/dae/config.dae)，将 `wan_interface` 的值修改为自己的网卡，可以使用 `ip a` 查看
 
 根据使用的代理在 `routing` 下添加规则，如 `pname(clash) -> must_direct`
 
