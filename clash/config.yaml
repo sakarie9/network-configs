@@ -9,6 +9,7 @@ use: &use
   type: select
   use:
     - proxy
+  exclude-filter: "剩余流量|过期时间"
 
 # url里填写自己的订阅,名称不能重复,path(文件位置)不能重复
 proxy-providers:
