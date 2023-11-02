@@ -14,12 +14,12 @@ use: &use
 proxy-providers:
   proxy:
     <<: *p
-    url: ''
+    url: ""
     path: ./proxy.yaml
 
 mixed-port: 7890
 allow-lan: true
-bind-address: '*'
+bind-address: "*"
 mode: rule
 log-level: warning
 ipv6: true
@@ -31,8 +31,8 @@ external-controller: 0.0.0.0:9090
 #external-ui: /var/tmp/clash-meta-webui
 external-ui: webui
 #external-ui-name: xd
-external-ui-url: 'https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip' #从 GitHub Pages 分支获取
-secret: ''
+external-ui-url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip" #从 GitHub Pages 分支获取
+secret: ""
 
 profile:
   store-selected: true
@@ -70,7 +70,7 @@ sniffer:
 #   fallback-filter: { geoip: true, ipcidr: [240.0.0.0/4, 0.0.0.0/32] }
 dns:
   enable: true
-  listen: '0.0.0.0:53'
+  listen: "0.0.0.0:53"
   ipv6: true
   default-nameserver:
     - 119.29.29.29
@@ -79,23 +79,31 @@ dns:
   fake-ip-range: 198.18.0.1/16
   use-hosts: true
   fake-ip-filter:
-    - '*.lan'
+    - "*.lan"
     - localhost.ptlogin2.qq.com
-    - '*.msftconnecttest.com'
-    - '*.msftncsi.com'
-    - '*.srv.nintendo.net'
-    - '*.stun.playstation.net'
-    - 'xbox.*.microsoft.com'
-    - '*.xboxlive.com'
-    - '*.logon.battlenet.com.cn'
-    - '*.logon.battle.net'
+    - "*.msftconnecttest.com"
+    - "*.msftncsi.com"
+    - "*.srv.nintendo.net"
+    - "*.stun.playstation.net"
+    - "xbox.*.microsoft.com"
+    - "*.xboxlive.com"
+    - "*.logon.battlenet.com.cn"
+    - "*.logon.battle.net"
     - stun.l.google.com
   nameserver:
     - 119.29.29.29
     - 223.5.5.5
 
+proxies:
+  - name: WARP
+    type: direct
+
 proxy-groups:
-  - { name: 代理模式, type: select, proxies: [节点选择, 自动选择, WARP, DIRECT] }
+  - {
+      name: 代理模式,
+      type: select,
+      proxies: [节点选择, 自动选择, WARP, DIRECT],
+    }
 
   - { name: 节点选择, <<: *use }
 
@@ -103,33 +111,33 @@ proxy-groups:
       name: 自动选择,
       type: url-test,
       <<: *use,
-      filter: '香港|日本',
-      exclude-filter: '2倍率|2.5倍率|3倍率',
-      url: 'https://cp.cloudflare.com/generate_204',
+      filter: "香港|日本",
+      exclude-filter: "2倍率|2.5倍率|3倍率",
+      url: "https://cp.cloudflare.com/generate_204",
       interval: 300,
       tolerance: 300,
       lazy: true,
     }
 
-  - { name: 其他流量, type: select, proxies: [代理模式, WARP, DIRECT] }
+  - { name: 其他流量, type: select, proxies: [代理模式, DIRECT] }
 
-  - { name: EH, <<: *use, proxies: [节点选择, WARP, DIRECT] }
+  - { name: EH, <<: *use, proxies: [节点选择, DIRECT] }
 
-  - { name: JP, <<: *use, filter: '日本', proxies: [DIRECT] }
+  - { name: JP, <<: *use, filter: "日本", proxies: [DIRECT] }
 
   - { name: Telegram, type: select, proxies: [代理模式, WARP, DIRECT] }
 
   # - { name: RELAY, type: relay, proxies: [WARP, 节点选择] }
 
-  - { name: 微软服务, type: select, proxies: [DIRECT, 代理模式, WARP] }
+  - { name: 微软服务, type: select, proxies: [DIRECT, 代理模式] }
 
-  - { name: 国际流媒体, type: select, proxies: [代理模式, WARP, DIRECT] }
+  - { name: 国际流媒体, type: select, proxies: [代理模式, DIRECT] }
 
-  - { name: 大陆流媒体国际版, type: select, proxies: [DIRECT, WARP, 代理模式] }
+  - { name: 大陆流媒体国际版, type: select, proxies: [DIRECT, 代理模式] }
 
   - { name: Steam, type: select, proxies: [DIRECT, 代理模式] }
 
-  - { name: 国际网站, type: select, proxies: [代理模式, WARP, DIRECT] }
+  - { name: 国际网站, type: select, proxies: [代理模式, DIRECT] }
 
   - { name: 大陆流量, type: select, proxies: [DIRECT, 代理模式] }
 
