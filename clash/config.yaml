@@ -1,48 +1,83 @@
-######### 锚点 start #######
-# proxy 相关
-# pr: &pr {type: select, proxies: [默认, 香港, 台湾, 日本, 新加坡, 美国, 其它地区, 全部节点, 自动选择, DIRECT]}
-
-#这里是订阅更新和延迟测试相关的
-p: &p {type: http, interval: 86400, health-check: {enable: true, url: https://www.gstatic.com/generate_204, interval: 600}}
+p: &p { type: http, interval: 86400, health-check: {
+        enable: true,
+        #url: https://www.gstatic.com/generate_204,
+        url: https://cp.cloudflare.com/generate_204,
+        interval: 600,
+      } }
 
 use: &use
   type: select
   use:
-  - sub1
-  
-######### 锚点 end #######
+    - proxy
 
 # url里填写自己的订阅,名称不能重复,path(文件位置)不能重复
 proxy-providers:
-  sub1:
+  proxy:
     <<: *p
-    url: "填写处理过的订阅链接" # 修改
-    path: ./sub1.yaml
+    url: ''
+    path: ./proxy.yaml
 
 mixed-port: 7890
-# tcp-concurrent: true # Meta
-
 allow-lan: true
-bind-address: "*"
-find-process-mode: strict
+bind-address: '*'
 mode: rule
 log-level: warning
 ipv6: true
+unified-delay: true
+tcp-concurrent: true
+keep-alive-interval: 600
 
 external-controller: 0.0.0.0:9090
-external-ui: /etc/clash-meta/yacd-gh-pages # webui 路径
-secret: ""
+#external-ui: /var/tmp/clash-meta-webui
+external-ui: webui
+#external-ui-name: xd
+external-ui-url: 'https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip' #从 GitHub Pages 分支获取
+secret: ''
 
 profile:
   store-selected: true
   store-fake-ip: true
 
+sniffer:
+  enable: false
+  sniff:
+    TLS:
+      ports: [443, 8443]
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+  force-domain:
+    - +.v2ex.com
+    - +.steamcommunity.com
+    - +.steampowered.com
+    #- +.live.com
+
+# dns:
+#   enable: true
+#   ipv6: true
+#   default-nameserver: [223.5.5.5, 119.29.29.29]
+#   enhanced-mode: fake-ip
+#   fake-ip-range: 198.18.0.1/16
+#   use-hosts: true
+#   nameserver: ["https://doh.pub/dns-query", "https://dns.alidns.com/dns-query"]
+#   fallback:
+#     [
+#       "https://doh.dns.sb/dns-query",
+#       "https://dns.cloudflare.com/dns-query",
+#       "https://dns.twnic.tw/dns-query",
+#       "tls://8.8.4.4:853",
+#     ]
+#   fallback-filter: { geoip: true, ipcidr: [240.0.0.0/4, 0.0.0.0/32] }
 dns:
   enable: true
-  listen: 0.0.0.0:1053
+  listen: '0.0.0.0:53'
   ipv6: true
-  enhanced-mode: redir-host
-  fake-ip-range: 28.0.0.1/8
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
   fake-ip-filter:
     - '*.lan'
     - localhost.ptlogin2.qq.com
@@ -55,48 +90,90 @@ dns:
     - '*.logon.battlenet.com.cn'
     - '*.logon.battle.net'
     - stun.l.google.com
-  default-nameserver:
-    - 119.29.29.29
-    - 223.5.5.5
   nameserver:
     - 119.29.29.29
     - 223.5.5.5
 
-proxies:
-
-
 proxy-groups:
-  
-  - {name: 国外流量, <<: *use}
+  - { name: 代理模式, type: select, proxies: [节点选择, 自动选择, WARP, DIRECT] }
 
-  - {name: 其他流量, type: select, proxies: [国外流量, DIRECT]}
+  - { name: 节点选择, <<: *use }
 
-  - {name: 微软服务, type: select, proxies: [DIRECT, 国外流量]}
+  - {
+      name: 自动选择,
+      type: url-test,
+      <<: *use,
+      filter: '香港|日本',
+      exclude-filter: '2倍率|2.5倍率|3倍率',
+      url: 'https://cp.cloudflare.com/generate_204',
+      interval: 300,
+      tolerance: 300,
+      lazy: true,
+    }
 
-  - {name: 国际流媒体, type: select, proxies: [国外流量, DIRECT]}
+  - { name: 其他流量, type: select, proxies: [代理模式, WARP, DIRECT] }
 
-  - {name: 大陆流媒体国际版, type: select, proxies: [DIRECT, 国外流量]}
+  - { name: EH, <<: *use, proxies: [节点选择, WARP, DIRECT] }
 
-  - {name: Steam, type: select, proxies: [DIRECT, 国外流量]}
+  - { name: JP, <<: *use, filter: '日本', proxies: [DIRECT] }
 
-  - {name: 国际网站, type: select, proxies: [国外流量, DIRECT]}
+  - { name: Telegram, type: select, proxies: [代理模式, WARP, DIRECT] }
 
-  - {name: 大陆流量, type: select, proxies: [DIRECT, 国外流量]}
+  # - { name: RELAY, type: relay, proxies: [WARP, 节点选择] }
 
-  - {name: 大陆流媒体, type: select, proxies: [DIRECT, 大陆流量]}
+  - { name: 微软服务, type: select, proxies: [DIRECT, 代理模式, WARP] }
 
-  - {name: 大陆网站, type: select, proxies: [DIRECT, 大陆流量]}
+  - { name: 国际流媒体, type: select, proxies: [代理模式, WARP, DIRECT] }
 
-  - {name: Telegram, type: select, proxies: [国外流量, DIRECT]}
+  - { name: 大陆流媒体国际版, type: select, proxies: [DIRECT, WARP, 代理模式] }
 
-  - {name: 特殊节点, <<: *use}
+  - { name: Steam, type: select, proxies: [DIRECT, 代理模式] }
 
+  - { name: 国际网站, type: select, proxies: [代理模式, WARP, DIRECT] }
+
+  - { name: 大陆流量, type: select, proxies: [DIRECT, 代理模式] }
+
+  - { name: 大陆流媒体, type: select, proxies: [DIRECT, 大陆流量] }
+
+  - { name: 大陆网站, type: select, proxies: [DIRECT, 大陆流量] }
+
+  - { name: 特殊节点, <<: *use }
 
 rules:
   # Unbreak
   - RULE-SET,Unbreak,DIRECT
 
   # User definied rules
+  #- DOMAIN-SUFFIX,chaotic.cx,DIRECT
+  #- DOMAIN-SUFFIX,mirror.heigou.pe.kr,DIRECT
+  #- PROCESS-NAME,qbittorrent,DIRECT
+  - DOMAIN-SUFFIX,bing.com,特殊节点
+  - DOMAIN-SUFFIX,openai.com,特殊节点
+  #- DOMAIN-SUFFIX,cm.steampowered.com,DIRECT
+  #- DOMAIN-SUFFIX,steamserver.net,DIRECT
+  - DOMAIN-SUFFIX,steamcommunity.com,DIRECT
+  - DOMAIN-SUFFIX,cangku.moe,代理模式
+  - DOMAIN-SUFFIX,dodi-repacks.site,代理模式
+  #- DOMAIN-KEYWORD,google.com,机场节点
+  #- DOMAIN-SUFFIX,android.googlesource.com,WARP
+  - DOMAIN-SUFFIX,ghproxy.com,DIRECT
+
+  # ブルーアーカイブ（ブルアカ），Blue Archive
+  - DOMAIN-SUFFIX,prod-game.bluearchiveyostar.com,JP
+  - DOMAIN-SUFFIX,prod-gateway.bluearchiveyostar.com,JP
+
+  - DOMAIN-SUFFIX,yostar-serverinfo.bluearchiveyostar.com,JP
+  - DOMAIN-SUFFIX,prod-xigncode.bluearchiveyostar.com,JP
+  - DOMAIN-SUFFIX,prod-noticeindex.bluearchiveyostar.com,JP
+  # download?
+  - DOMAIN-SUFFIX,prod-clientpatch.bluearchiveyostar.com,DIRECT
+  #- DOMAIN-SUFFIX,prod-notice.bluearchiveyostar.com,JP
+  #- DOMAIN-SUFFIX,prod-voice.bluearchiveyostar.com,JP
+  - DOMAIN-SUFFIX,ba-jp-sdk.bluearchive.jp,JP
+  - DOMAIN,yostar-oversea-client-logging.ap-southeast-1.log.aliyuncs.com,JP
+  - DOMAIN,yostar-oversea-netsdk-logging.ap-southeast-1.log.aliyuncs.com,JP
+
+  - DOMAIN-SUFFIX,spotify.com,JP
 
   # Global Area Network
   #
@@ -113,6 +190,10 @@ rules:
   - IP-CIDR6,2001:67c:4e8::/48,Telegram,no-resolve
   - IP-CIDR6,2001:b28:f23d::/48,Telegram,no-resolve
   - IP-CIDR6,2001:b28:f23f::/48,Telegram,no-resolve
+
+  # EH
+  - DOMAIN-SUFFIX,e-hentai.org,EH
+  - DOMAIN-SUFFIX,exhentai.org,EH
 
   # 微软服务
   - DOMAIN-KEYWORD,1drv,微软服务
@@ -230,12 +311,12 @@ rules:
   - MATCH,其他流量
 
 rule-providers:
-# name: # Provider 名称
-#   type: http # http 或 file
-#   behavior: classical # 或 ipcidr、domain
-#   path: # 文件路径
-#   url: # 只有当类型为 HTTP 时才可用，您不需要在本地空间中创建新文件。
-#   interval: # 自动更新间隔，仅在类型为 HTTP 时可用
+  # name: # Provider 名称
+  #   type: http # http 或 file
+  #   behavior: classical # 或 ipcidr、domain
+  #   path: # 文件路径
+  #   url: # 只有当类型为 HTTP 时才可用，您不需要在本地空间中创建新文件。
+  #   interval: # 自动更新间隔，仅在类型为 HTTP 时可用
 
   Unbreak:
     type: http
