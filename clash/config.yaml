@@ -136,7 +136,7 @@ proxy-groups:
 
   - { name: 大陆流媒体国际版, type: select, proxies: [DIRECT, 代理模式] }
 
-  - { name: Steam, type: select, proxies: [DIRECT, 代理模式] }
+  - { name: 游戏平台, type: select, proxies: [DIRECT, 代理模式] }
 
   - { name: 国际网站, type: select, proxies: [代理模式, DIRECT] }
 
