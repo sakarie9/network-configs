@@ -149,9 +149,6 @@ proxy-groups:
   - { name: 特殊节点, <<: *use }
 
 rules:
-  # Unbreak
-  - RULE-SET,Unbreak,DIRECT
-
   # User definied rules
   #- DOMAIN-SUFFIX,chaotic.cx,DIRECT
   #- DOMAIN-SUFFIX,mirror.heigou.pe.kr,DIRECT
@@ -282,40 +279,29 @@ rules:
   - DOMAIN-SUFFIX,yammer.com,微软服务
   - DOMAIN-SUFFIX,yammerusercontent.com,微软服务
 
-  # (Streaming Media)
-  - RULE-SET,Streaming,国际流媒体
+  # GlobalMedia
+  - RULE-SET,GlobalMedia,国际流媒体
 
-  # (StreamingSE)
-  - RULE-SET,StreamingSE,大陆流媒体国际版
+  # AsianMedia
+  - RULE-SET,AsianMedia,大陆流媒体国际版
 
-  # (Steam)
-  - RULE-SET,Steam,Steam
+  # Game
+  - RULE-SET,Game,游戏平台
 
-  # (DNS Cache Pollution) / (IP Blackhole) / (Region-Restricted Access Denied) / (Network Jitter)
+  # Global
   - RULE-SET,Global,国际网站
 
-  # (StreamingCN)
-  - RULE-SET,StreamingCN,大陆流媒体
+  # ChinaMedia
+  - RULE-SET,ChinaMedia,大陆流媒体
 
-  # China Area Network
+  # China
   - RULE-SET,China,大陆网站
 
-  # Local Area Network
-  - IP-CIDR,192.168.0.0/16,DIRECT
-  - IP-CIDR,10.0.0.0/8,DIRECT
-  - IP-CIDR,172.16.0.0/12,DIRECT
-  - IP-CIDR,127.0.0.0/8,DIRECT
-  - IP-CIDR,100.64.0.0/10,DIRECT
-  - IP-CIDR,224.0.0.0/4,DIRECT
-  - IP-CIDR,fe80::/10,DIRECT
+  # Lan
+  - RULE-SET,Lan,DIRECT
 
-  # （可选）使用来自 ipipdotnet 的 ChinaIP 以解决数据不准确的问题，使用 ChinaIP.yaml 时可禁用下列直至（包括）「GEOIP,CN」规则
-  - RULE-SET,ChinaIP,大陆流量
-  # Tencent
-  # - IP-CIDR,119.28.28.28/32,🏠 大陆流量
-  # - IP-CIDR,182.254.116.0/24,🏠 大陆流量
-  # GeoIP China
-  # - GEOIP,CN,🏠 大陆流量
+  # ChinaIPs
+  - RULE-SET,ChinaIPs,大陆流量
 
   - MATCH,其他流量
 
@@ -327,58 +313,65 @@ rule-providers:
   #   url: # 只有当类型为 HTTP 时才可用，您不需要在本地空间中创建新文件。
   #   interval: # 自动更新间隔，仅在类型为 HTTP 时可用
 
-  Unbreak:
+  Direct:
     type: http
     behavior: classical
-    path: ./RuleSet/Unbreak.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Unbreak.yaml
+    path: ./RuleSet/Direct.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/Direct/Direct.yaml
     interval: 86400
 
-  Streaming:
+  GlobalMedia:
     type: http
     behavior: classical
-    path: ./RuleSet/StreamingMedia/Streaming.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/Streaming.yaml
+    path: ./RuleSet/GlobalMedia.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/GlobalMedia/GlobalMedia_Classical.yaml
     interval: 86400
 
-  StreamingSE:
+  AsianMedia:
     type: http
     behavior: classical
-    path: ./RuleSet/StreamingMedia/StreamingSE.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/StreamingSE.yaml
+    path: ./RuleSet/AsianMedia.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/AsianMedia/AsianMedia.yaml
     interval: 86400
 
-  StreamingCN:
+  Game:
     type: http
     behavior: classical
-    path: ./RuleSet/StreamingMedia/StreamingCN.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/StreamingCN.yaml
-    interval: 86400
-
-  Steam:
-    type: http
-    behavior: classical
-    path: ./RuleSet/Extra/Game/Steam.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Extra/Game/Steam.yaml
+    path: ./RuleSet/Game.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/Game/Game.yaml
     interval: 86400
 
   Global:
     type: http
     behavior: classical
     path: ./RuleSet/Global.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Global.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/Global/Global_Classical.yaml
+    interval: 86400
+
+  ChinaMedia:
+    type: http
+    behavior: classical
+    path: ./RuleSet/ChinaMedia.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/ChinaMedia/ChinaMedia.yaml
     interval: 86400
 
   China:
     type: http
     behavior: classical
     path: ./RuleSet/China.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/China.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/China/China_Classical.yaml
     interval: 86400
 
-  ChinaIP:
+  Lan:
     type: http
-    behavior: ipcidr
-    path: ./RuleSet/Extra/ChinaIP.yaml
-    url: https://ghproxy.com/https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/cncidr.txt
+    behavior: classical
+    path: ./RuleSet/Lan.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/Lan/Lan.yaml
+    interval: 86400
+
+  ChinaIPs:
+    type: http
+    behavior: classical
+    path: ./RuleSet/ChinaIPs.yaml
+    url: http://resource.touhou.center/ios_rule_script/rule/Clash/ChinaIPs/ChinaIPs_Classical.yaml
     interval: 86400
