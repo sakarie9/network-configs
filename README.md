@@ -1,6 +1,6 @@
 # Sakari 的 Linux 网络配置仓库
 
-[使用dae和clash实现的全局代理方案](https://sakari.top/2023/dae-clash/)
+[使用dae和clash实现的全局代理方案](https://sakari.top/posts/2023/dae-clash/)
 
 ## 使用项目
 
